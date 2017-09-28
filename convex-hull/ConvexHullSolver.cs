@@ -29,6 +29,17 @@ namespace _2_convex_hull
             System.Threading.Thread.Sleep(milliseconds);
         }
 
+        private void ShowHull(Hull hull)
+        {
+            // Create pen.
+            Pen pen = new Pen(Color.Red, 3);
+
+            //Draw lines to screen.
+            PointF[] pts = new PointF[hull.Count];
+            hull.CopyTo(pts, 0);
+            g.DrawLines(pen, pts);
+        }
+
         public void Solve(List<System.Drawing.PointF> pointList)
         {
             pointList.Sort(
@@ -63,52 +74,124 @@ namespace _2_convex_hull
                 ptsR.Add(pts[i]);
             }
 
-
             Hull hullL = DC(ptsL);
             Hull hullR = DC(ptsR);
-
-            /*
-            ShowHull(hullL);
-            ShowHull(hullR);
-            */
 
             return MergeHulls(hullL, hullR);
         }
 
         private Hull MergeHulls(Hull hullL, Hull hullR)
         {
+            Hull combination = calcUpperTangent(hullL, hullR);
+            //calcLowerTangent(combination); ???
             return null;
+        }
 
-
-
-
-
+        private Hull calcUpperTangent(Hull hullL, Hull hullR)
+        {
             bool checkL = true;
             bool checkR = true;
-            //getLeftUpperTangent();
-            while(checkL)
-            {
-                //if slope of next isn't steeper
-                checkL = false;
+            LinkedListNode<PointF> leftUpperTangent = hullL.Rightmost();
+            LinkedListNode<PointF> rightUpperTangent = hullR.Leftmost();
+            double currentSlope = slope(leftUpperTangent, rightUpperTangent);
+            double newSlope;
 
+            while (checkL || checkR)
+            {              
+                LinkedListNode<PointF> Lcurrent = leftUpperTangent;
+                while (checkL)
+                {
+                    Lcurrent = Lcurrent.Previous; // OrLast(); -> don't think this is necessary here
+                    if(Lcurrent == null) //you've reached the end of the linked list
+                    {
+                        checkL = false;
+                        break;
+                    }
+                    newSlope = slope(Lcurrent, rightUpperTangent); //maybe should be using Rcurrent instead of rightUpperTangent
+                    if (newSlope >= currentSlope) //if this can be > instead of >=, then i can use Lcurrent.PreviousOrLast above and remove the if(Lcurrent==null) block
+                    {
+                        leftUpperTangent = Lcurrent;
+                        checkR = true;
+                        currentSlope = newSlope;
+                    }
+                    else
+                    {
+                        checkL = false;
+                    }
+                }
 
+                LinkedListNode<PointF> Rcurrent = rightUpperTangent;
+                while (checkR)
+                {
+                    Rcurrent = Rcurrent.Next; // OrFirst(); -> don't think this is necessary here
+                    if (Rcurrent == null) //you've reached the end of the linked list
+                    {
+                        checkR = false;
+                        break;
+                    }
+                    newSlope = slope(Rcurrent, leftUpperTangent); //maybe should be using Lcurrent instead of leftUpperTangent
+                    if (newSlope <= currentSlope)
+                    {
+                        rightUpperTangent = Rcurrent;
+                        checkL = true;
+                        currentSlope = newSlope;
+                    }
+                    else
+                    {
+                        checkR = false;
+                    }
+                }
             }
-            while(checkR)
-            {
+            
+            //TODO still need to link left upper tangent with right upper tangent
 
-            }
-            return null;
+            return hullL;
         }
 
-        private void ShowHull(Hull hull)
+        private double slope(LinkedListNode<PointF> pt1, LinkedListNode<PointF> pt2)
         {
-            // Create pen.
-            Pen pen = new Pen(Color.Red, 3);
-
-            //Draw lines to screen.
-            g.DrawLines(pen, hull.ToArray());
+            return (pt1.Value.Y - pt2.Value.Y) / (pt1.Value.X - pt2.Value.X);
         }
     }
+
+
+     class Hull : LinkedList<PointF>
+    {
+        private LinkedListNode<PointF> leftmost;
+        private LinkedListNode<PointF> rightmost;
+
+        public Hull(List<PointF> pts) : base(pts) //this will only ever be one point
+        {
+            leftmost = rightmost = new LinkedListNode<PointF>(pts[0]);
+        }
+
+        public Hull(Hull template) : base(template)
+        {
+            leftmost = template.leftmost;
+        }
+
+        public LinkedListNode<PointF> Leftmost()
+        {
+            return leftmost;
+        }
+        public LinkedListNode<PointF> Rightmost()
+        {
+            return rightmost;
+        }
+
+        public void SetRightmost(LinkedListNode<PointF> rightmost)
+        {
+            this.rightmost = rightmost;
+        }
+
+        public PointF[] ToArray()
+        {
+            PointF[] array = new PointF[this.Count];
+            this.CopyTo(array, 0);
+            return array;
+        }
+    } 
+
 
     /** This class represents extended methods added to the  LinkedListNode class. 
      *  These methods make the builtin doubly linked list essentially circular
@@ -125,29 +208,6 @@ namespace _2_convex_hull
         public static LinkedListNode<T> PreviousOrLast<T>(this LinkedListNode<T> current)
         {
             return current.Previous ?? current.List.Last;
-        }
-    }
-
-    class Hull
-    {
-        public Hull(IEnumerable<PointF> pts)
-        {
-            hull = new LinkedList<PointF>(pts);
-            /*leftmost = new Vertex(pts[0]);
-
-            for(int i=1; i<pts.Count; i++)
-            {
-                pts[i-1].SetNext(new Vertex(pts[i]));
-            } */
-        }
-
-        private LinkedList<PointF> hull;
-
-        public PointF[] ToArray()
-        {
-            PointF[] array = new PointF[hull.Count];
-            hull.CopyTo(array, 0);
-            return array;
         }
     }
 
