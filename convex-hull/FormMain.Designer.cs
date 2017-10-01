@@ -39,14 +39,16 @@ namespace _2_convex_hull
             this.label2 = new System.Windows.Forms.Label();
             this.radioUniform = new System.Windows.Forms.RadioButton();
             this.radioGaussian = new System.Windows.Forms.RadioButton();
+            this.label3 = new System.Windows.Forms.Label();
+            this.pause = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxView)).BeginInit();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // pictureBoxView
             // 
-            this.pictureBoxView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.pictureBoxView.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.pictureBoxView.BackColor = System.Drawing.Color.White;
             this.pictureBoxView.Location = new System.Drawing.Point(12, 12);
             this.pictureBoxView.Name = "pictureBoxView";
@@ -56,8 +58,8 @@ namespace _2_convex_hull
             // 
             // buttonGenerate
             // 
-            this.buttonGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonGenerate.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonGenerate.Location = new System.Drawing.Point(297, 471);
             this.buttonGenerate.Name = "buttonGenerate";
             this.buttonGenerate.Size = new System.Drawing.Size(73, 23);
@@ -68,8 +70,8 @@ namespace _2_convex_hull
             // 
             // buttonSolve
             // 
-            this.buttonSolve.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.buttonSolve.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.buttonSolve.Location = new System.Drawing.Point(378, 471);
             this.buttonSolve.Name = "buttonSolve";
             this.buttonSolve.Size = new System.Drawing.Size(73, 23);
@@ -80,8 +82,8 @@ namespace _2_convex_hull
             // 
             // label1
             // 
-            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.label1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.label1.AutoSize = true;
             this.label1.Location = new System.Drawing.Point(9, 476);
             this.label1.Name = "label1";
@@ -91,8 +93,8 @@ namespace _2_convex_hull
             // 
             // textBoxNumPoints
             // 
-            this.textBoxNumPoints.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)));
+            this.textBoxNumPoints.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             this.textBoxNumPoints.Location = new System.Drawing.Point(162, 473);
             this.textBoxNumPoints.Name = "textBoxNumPoints";
             this.textBoxNumPoints.Size = new System.Drawing.Size(113, 20);
@@ -104,9 +106,9 @@ namespace _2_convex_hull
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusLabel});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 526);
+            this.statusStrip1.Location = new System.Drawing.Point(0, 515);
             this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(720, 22);
+            this.statusStrip1.Size = new System.Drawing.Size(710, 22);
             this.statusStrip1.TabIndex = 5;
             this.statusStrip1.Text = "statusStrip1";
             // 
@@ -159,12 +161,32 @@ namespace _2_convex_hull
             this.radioGaussian.UseVisualStyleBackColor = true;
             this.radioGaussian.CheckedChanged += new System.EventHandler(this.radioGaussian_CheckedChanged);
             // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(554, 476);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(40, 13);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "Pause:";
+            // 
+            // pause
+            // 
+            this.pause.Location = new System.Drawing.Point(592, 473);
+            this.pause.Name = "pause";
+            this.pause.Size = new System.Drawing.Size(95, 20);
+            this.pause.TabIndex = 12;
+            this.pause.Text = "0";
+            this.pause.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
+            // 
             // FormMain
             // 
             this.AcceptButton = this.buttonGenerate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(720, 548);
+            this.ClientSize = new System.Drawing.Size(710, 537);
+            this.Controls.Add(this.pause);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.radioGaussian);
             this.Controls.Add(this.radioUniform);
             this.Controls.Add(this.label2);
@@ -202,6 +224,8 @@ namespace _2_convex_hull
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.RadioButton radioUniform;
         private System.Windows.Forms.RadioButton radioGaussian;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox pause;
     }
 }
 

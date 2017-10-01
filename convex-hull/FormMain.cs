@@ -197,7 +197,7 @@ namespace _2_convex_hull
         {
             Stopwatch timer = new Stopwatch();
             timer.Start();
-                ConvexHullSolver convexHullSolver = new ConvexHullSolver(m_g, pictureBoxView);
+                ConvexHullSolver convexHullSolver = new ConvexHullSolver(m_g, pictureBoxView, Convert.ToInt32(pause.Text));
                 convexHullSolver.Solve(m_pointList);
                 pictureBoxView.Refresh();
             timer.Stop();
@@ -222,6 +222,11 @@ namespace _2_convex_hull
             if( !(pointGenerator is GaussianPointGenerator) ) {
                 pointGenerator = new GaussianPointGenerator();
             }
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

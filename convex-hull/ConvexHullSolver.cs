@@ -9,11 +9,13 @@ namespace _2_convex_hull
     {
         System.Drawing.Graphics g;
         System.Windows.Forms.PictureBox pictureBoxView;
+        int pause;
 
-        public ConvexHullSolver(System.Drawing.Graphics g, System.Windows.Forms.PictureBox pictureBoxView)
+        public ConvexHullSolver(System.Drawing.Graphics g, System.Windows.Forms.PictureBox pictureBoxView, int pause)
         {
             this.g = g;
             this.pictureBoxView = pictureBoxView;
+            this.pause = pause;
         }
 
         public void Refresh()
@@ -32,12 +34,12 @@ namespace _2_convex_hull
         private void ShowHull(Hull hull)
         {
             // Create pen.
-            Pen pen = new Pen(Color.Red, 3);
+            Pen pen = new Pen(Color.Red, 1);
 
             //Draw lines to screen.
-            PointF[] pts = new PointF[hull.Count];
-            hull.CopyTo(pts, 0);
-            g.DrawLines(pen, pts);
+            List<PointF> pts = hull.ToList();
+            if (pts.Count == 1) return;
+            g.DrawLines(pen, pts.ToArray());
         }
 
         public void Solve(List<System.Drawing.PointF> pointList)
@@ -50,16 +52,13 @@ namespace _2_convex_hull
             );
 
             Hull hull = DC(pointList);
-
-
-
-            
+            ShowHull(hull);
         }
 
         private Hull DC(List<PointF> pts)
         {
             if (pts.Count == 1)
-                return new Hull(pts);
+                return new Hull(pts[0]);
             
             //divide set of points in half via x-value (they're already sorted by x val)
             int mid = pts.Count / 2;
@@ -82,33 +81,35 @@ namespace _2_convex_hull
 
         private Hull MergeHulls(Hull hullL, Hull hullR)
         {
-            Hull combination = calcUpperTangent(hullL, hullR);
-            //calcLowerTangent(combination); ???
-            return null;
+            calcTangents(hullL, hullR);
+            hullL.SetRightmost(hullR.Rightmost());
+            //ShowHull(hullL); //Need to remove old hulls so this works
+            //Refresh();
+            //Pause(pause);
+            return hullL;
         }
 
-        private Hull calcUpperTangent(Hull hullL, Hull hullR)
+        //TODO - combine upper and lower tangent functions into one function, using a flag
+        //The hull's linkedLists go in a clock-wised fashion
+        private void calcTangents(Hull hullL, Hull hullR)
         {
+            //Calc upper tangent
             bool checkL = true;
             bool checkR = true;
-            LinkedListNode<PointF> leftUpperTangent = hullL.Rightmost();
-            LinkedListNode<PointF> rightUpperTangent = hullR.Leftmost();
+            Vertex leftUpperTangent = hullL.Rightmost();
+            Vertex rightUpperTangent = hullR.Leftmost();
             double currentSlope = slope(leftUpperTangent, rightUpperTangent);
             double newSlope;
 
             while (checkL || checkR)
             {              
-                LinkedListNode<PointF> Lcurrent = leftUpperTangent;
+                Vertex Lcurrent = leftUpperTangent;
                 while (checkL)
                 {
-                    Lcurrent = Lcurrent.Previous; // OrLast(); -> don't think this is necessary here
-                    if(Lcurrent == null) //you've reached the end of the linked list
-                    {
-                        checkL = false;
-                        break;
-                    }
+                    Lcurrent = Lcurrent.Previous();
+                    //here i may need to check if i've looped through all of the vertices
                     newSlope = slope(Lcurrent, rightUpperTangent); //maybe should be using Rcurrent instead of rightUpperTangent
-                    if (newSlope >= currentSlope) //if this can be > instead of >=, then i can use Lcurrent.PreviousOrLast above and remove the if(Lcurrent==null) block
+                    if (newSlope > currentSlope) //if this can be > instead of >=, then i can use Lcurrent.PreviousOrLast above and remove the if(Lcurrent==null) block
                     {
                         leftUpperTangent = Lcurrent;
                         checkR = true;
@@ -120,17 +121,13 @@ namespace _2_convex_hull
                     }
                 }
 
-                LinkedListNode<PointF> Rcurrent = rightUpperTangent;
+                Vertex Rcurrent = rightUpperTangent;
                 while (checkR)
                 {
-                    Rcurrent = Rcurrent.Next; // OrFirst(); -> don't think this is necessary here
-                    if (Rcurrent == null) //you've reached the end of the linked list
-                    {
-                        checkR = false;
-                        break;
-                    }
+                    Rcurrent = Rcurrent.Next();
+                    //here i may need to check if i've looped through all of the vertices
                     newSlope = slope(Rcurrent, leftUpperTangent); //maybe should be using Lcurrent instead of leftUpperTangent
-                    if (newSlope <= currentSlope)
+                    if (newSlope < currentSlope)
                     {
                         rightUpperTangent = Rcurrent;
                         checkL = true;
@@ -142,89 +139,130 @@ namespace _2_convex_hull
                     }
                 }
             }
-            
-            //TODO still need to link left upper tangent with right upper tangent
 
-            return hullL;
+            calcLowerTangent(hullL, hullR);
+            
+            leftUpperTangent.SetNext(rightUpperTangent);
+            rightUpperTangent.SetPrevious(leftUpperTangent);
         }
 
-        private double slope(LinkedListNode<PointF> pt1, LinkedListNode<PointF> pt2)
+        private void calcLowerTangent(Hull hullL, Hull hullR)
         {
-            return (pt1.Value.Y - pt2.Value.Y) / (pt1.Value.X - pt2.Value.X);
+            bool checkL = true;
+            bool checkR = true;
+            Vertex leftLowerTangent = hullL.Rightmost();
+            Vertex rightLowerTangent = hullR.Leftmost();
+            double currentSlope = slope(leftLowerTangent, rightLowerTangent);
+            double newSlope;
+
+            while (checkL || checkR)
+            {
+                Vertex Lcurrent = leftLowerTangent;
+                while (checkL)
+                {
+                    Lcurrent = Lcurrent.Next();
+                    //here i may need to check if i've looped through all of the vertices
+                    newSlope = slope(Lcurrent, rightLowerTangent); 
+                    if (newSlope < currentSlope) //if this can be < instead of <=, then i can use Lcurrent.PreviousOrLast above and remove the if(Lcurrent==null) block
+                    {
+                        leftLowerTangent = Lcurrent;
+                        checkR = true;
+                        currentSlope = newSlope;
+                    }
+                    else
+                    {
+                        checkL = false;
+                    }
+                }
+
+                Vertex Rcurrent = rightLowerTangent;
+                while (checkR)
+                {
+                    Rcurrent = Rcurrent.Previous();
+                    //here i may need to check if i've looped through all of the vertices
+                    newSlope = slope(Rcurrent, leftLowerTangent);
+                    if (newSlope > currentSlope)
+                    {
+                        rightLowerTangent = Rcurrent;
+                        checkL = true;
+                        currentSlope = newSlope;
+                    }
+                    else
+                    {
+                        checkR = false;
+                    }
+                }
+            }
+
+            leftLowerTangent.SetPrevious(rightLowerTangent);
+            rightLowerTangent.SetNext(leftLowerTangent);
+        }
+
+        private double slope(Vertex pt1, Vertex pt2)
+        {
+            return (pt1.Point().Y - pt2.Point().Y) / (pt1.Point().X - pt2.Point().X);
         }
     }
 
 
-     class Hull : LinkedList<PointF>
+    class Hull
     {
-        private LinkedListNode<PointF> leftmost;
-        private LinkedListNode<PointF> rightmost;
-
-        public Hull(List<PointF> pts) : base(pts) //this will only ever be one point
+        public Hull(PointF lonePoint)
         {
-            leftmost = rightmost = new LinkedListNode<PointF>(pts[0]);
+            Vertex vertex = new Vertex(lonePoint);
+            leftmost = rightmost = vertex;
         }
 
-        public Hull(Hull template) : base(template)
-        {
-            leftmost = template.leftmost;
-        }
+        private Vertex leftmost;
+        private Vertex rightmost;
 
-        public LinkedListNode<PointF> Leftmost()
-        {
-            return leftmost;
-        }
-        public LinkedListNode<PointF> Rightmost()
-        {
-            return rightmost;
-        }
+        public Vertex Leftmost() { return leftmost; }
+        public Vertex Rightmost() { return rightmost; }
 
-        public void SetRightmost(LinkedListNode<PointF> rightmost)
-        {
-            this.rightmost = rightmost;
-        }
+        public void SetLeftmost(Vertex leftmost) { this.leftmost = leftmost; }
+        public void SetRightmost(Vertex rightmost) { this.rightmost = rightmost; }
 
-        public PointF[] ToArray()
+        public List<PointF> ToList()
         {
-            PointF[] array = new PointF[this.Count];
-            this.CopyTo(array, 0);
-            return array;
+            List<PointF> pts = new List<PointF>();
+            pts.Add(leftmost.Point());
+            Vertex current = leftmost;
+            while(current.Next() != leftmost)
+            {
+                current = current.Next();
+                pts.Add(current.Point());
+            }
+            pts.Add(leftmost.Point()); //this is so that you connect the hull at the very end back to the start
+            return pts;
         }
     } 
 
-
-    /** This class represents extended methods added to the  LinkedListNode class. 
-     *  These methods make the builtin doubly linked list essentially circular
-     *  See https://stackoverflow.com/questions/716256/creating-a-circularly-linked-list-in-c
-     *  and https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/classes-and-structs/extension-methods
-     */
-    static class CircularLinkedList
+    class Vertex
     {
-        public static LinkedListNode<T> NextOrFirst<T>(this LinkedListNode<T> current)
+        public Vertex(PointF lonePoint)
         {
-            return current.Next ?? current.List.First;
-        }
-
-        public static LinkedListNode<T> PreviousOrLast<T>(this LinkedListNode<T> current)
-        {
-            return current.Previous ?? current.List.Last;
-        }
-    }
-
-    /*class Vertex
-    {
-        public Vertex(PointF pt)
-        {
-            this.pt = pt;
+            this.next = this;
+            this.previous = this;
+            this.point = lonePoint;
         }
 
         Vertex next;
-        Vertex prev;
-        PointF pt;
+        Vertex previous;
+        PointF point;
+
+        public Vertex Next() { return next; }
+        public Vertex Previous() { return previous; }
+        public PointF Point() { return point; }
+        
 
         public void SetNext(Vertex next)
         {
             this.next = next;
         }
-    } */
+
+        public void SetPrevious(Vertex previous)
+        {
+            this.previous = previous;
+        }
+    }
 }
